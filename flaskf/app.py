@@ -5,6 +5,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
+
 import numpy as np
 from io import BytesIO
 import base64
@@ -46,7 +47,7 @@ def results():
         scores.append(data.score)
 
     corr_coef = round(np.corrcoef(hours, scores)[0, 1], 2)
-
+#ビジュアライズ
     plt.scatter(hours, scores)
     plt.title(f"Correlation Coefficient: {corr_coef}")
     plt.xlabel("Study Hours")
