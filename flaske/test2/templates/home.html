@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Records</title>
+</head>
+<body>
+    <h1>Study Records</h1>
+    <form action="/" method="POST">
+        
+        <label for="study_time">Study Time (minutes):</label>
+        <input type="number" id="study_time" name="study_time" required><br><br>
+        <label for="grade">Grade:</label>
+        <input type="number" id="grade" name="grade" required><br><br>
+        <input type="submit" value="Add Record">
+    </form>
+    {% if advice %}
+    <h2>Advice</h2>
+    <p>{{ advice }}</p>
+    {% endif %}
+    <h2>Study Records</h2>
+    <table>
+        <tr>
+            
+            <th>Date</th>
+            <th>Study Time</th>
+            <th>Grade</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result[0] }}</td>
+            <td>{{ result[1] }}</td>
+            <td>{{ result[2] }} minutes</td>
+            <td>{{ result[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
