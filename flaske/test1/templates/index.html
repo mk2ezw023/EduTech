@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Record</title>
+</head>
+<body>
+    <h1>Study Record</h1>
+    <form method="POST" action="{{ url_for('add') }}">
+        <label>Date:</label>
+        <input type="date" name="date" required><br><br>
+        <label>Study Time (in minutes):</label>
+        <input type="number" name="study_time" required><br><br>
+        <label>Grade:</label>
+        <input type="number" name="grade" min="0" max="100" required><br><br>
+        <input type="submit" value="Add">
+    </form>
+    <br>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Study Time</th>
+            <th>Grade</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result[1] }}</td>
+            <td>{{ result[2] }} minutes</td>
+            <td>{{ result[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>    
+           
