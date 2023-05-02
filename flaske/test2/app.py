@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 
 app = Flask(__name__)
@@ -19,6 +19,20 @@ def get_study_records():
     results = cur.fetchall()
     conn.close()
     return results
+
+
+    
+@app.route('/add', methods=['POST'])
+def add():
+    date = request.form['date']
+    study_time = request.form['study_time']
+    grade = request.form['grade']
+    conn = sqlite3.connect('study.db')
+    cur = conn.cursor()
+    cur.execute('INSERT INTO study (date, study_time, grade) VALUES (?, ?, ?)', (date, study_time, grade))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
 
 def generate_advice():
     records = get_study_records()
