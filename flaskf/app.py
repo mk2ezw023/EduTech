@@ -58,6 +58,17 @@ def results():
     plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
 
     return render_template('results.html', plot_data=plot_data)
+#残り日数の変更
+import datetime
+
+
+@app.route('/exam', methods=['POST'])
+def exam():
+    exam_date = request.form['exam_date']
+    exam_date = datetime.datetime.strptime(exam_date, '%Y-%m-%d')
+    today = datetime.datetime.today()
+    remaining_days = (exam_date - today).days
+    return render_template('countdown.html', remaining_days=remaining_days)
 
 if __name__ == '__main__':
     app.run(debug=True)

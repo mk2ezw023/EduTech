@@ -10,3 +10,11 @@
     <img src="data:image/png;base64, {{ plot_data }}" />
   </body>
 </html>
+
+<form action="{{ url_for('exam') }}" method="post">
+  <label for="exam_date">試験日:</label>
+  <input type="date" id="exam_date" name="exam_date" required>
+  <br>
+  <button type="submit">試験までの残り日数を計算する</button>
+</form>
+
