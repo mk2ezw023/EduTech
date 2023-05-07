@@ -51,5 +51,5 @@ def index():
         return render_template('index.html', data=data)
 
 if __name__ == '__main__':
-    app.run(port=5005)  # 代わりのポート番号を指定
+    app.run(port=5010)  # 代わりのポート番号を指定
 
