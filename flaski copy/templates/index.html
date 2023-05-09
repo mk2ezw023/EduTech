@@ -1,0 +1,22 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Time Allocation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Study Time Allocation</h1>
+    <form method="POST" action="{{ url_for('index') }}">
+        {% for subject, hours in data %}
+        <div class="subject-row">
+            <label for="{{ subject }}">{{ subject }}</label>
+            <input type="number" name="hours" id="{{ subject }}" value="{{ hours }}">
+            <input type="hidden" name="subject" value="{{ subject }}">
+        </div>
+        {% endfor %}
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
