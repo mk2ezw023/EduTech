@@ -1,8 +1,8 @@
 # app.py
-
 from flask import Flask, render_template, request
 import sqlite3
 import datetime
+
 
 app = Flask(__name__)
 
@@ -19,7 +19,7 @@ def init_database():
         # 既存のデータを削除
         c.execute('DELETE FROM subjects')
         # 初期データの挿入
-        subjects = [('英語', 0), ('数学', 0), ('国語', 0), ('理科', 0), ('社会', 0)]
+        subjects = [('英語', 0,), ('数学', 0), ('国語', 0), ('理科', 0), ('社会', 0)]
         c.executemany('INSERT INTO subjects (name, hours) VALUES (?, ?)', subjects)
         conn.commit()
 
