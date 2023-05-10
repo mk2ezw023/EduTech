@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Study Tracker</title>
+</head>
+<body>
+  <h1>Study Tracker</h1>
+  
+  <h2>Enter Study Data</h2>
+  <form action="{{ url_for('results') }}" method="POST">
+    <label for="study_hours">Study Hours:</label>
+    <input type="number" name="study_hours" id="study_hours" required>
+    
+    <label for="score">Score:</label>
+    <input type="number" name="score" id="score" required>
+    
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Remaining Days</h2>
+  <form action="{{ url_for('exam') }}" method="POST">
+    <label for="exam_date">Exam Date:</label>
+    <input type="date" name="exam_date" id="exam_date" required>
+    <button type="submit">Calculate</button>
+  </form>
+</body>
+</html>
