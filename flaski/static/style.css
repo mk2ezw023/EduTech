@@ -1,7 +1,9 @@
 /* style.css */
 
 body {
+  background-image: url('sora.jpg');
   font-family: Arial, sans-serif;
+  font-family: 'Comic Sans MS', cursive;
 }
 
 h1 {
@@ -31,3 +33,4 @@ input[type="submit"] {
   width: 400px;
   margin: 0 auto;
 }
+

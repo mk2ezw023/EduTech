@@ -2,8 +2,10 @@
 
 from flask import Flask, render_template, request
 import sqlite3
+import datetime
 
 app = Flask(__name__)
+
 
 # データベースファイルのパス
 DATABASE = 'db/study.db'
@@ -49,6 +51,17 @@ def index():
             data = c.fetchall()
 
         return render_template('index.html', data=data)
+
+# 残り日数を計算し、カウントダウンページを表示するためのルート
+@app.route('/exam', methods=['POST'])
+def exam():
+    # フォームから送信された試験日を取得し、計算に必要な形式に変換する
+    exam_date = request.form['exam_date']
+    exam_date = datetime.datetime.strptime(exam_date, '%Y-%m-%d')
+    today = datetime.datetime.today()
+    remaining_days = (exam_date - today).days
+    return render_template('index.html', remaining_days=remaining_days)
+
 
 if __name__ == '__main__':
     app.run(port=5010)  # 代わりのポート番号を指定

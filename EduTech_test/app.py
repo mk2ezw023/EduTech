@@ -1,45 +1,60 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
 import numpy as np
 from io import BytesIO
 import base64
 from base64 import b64encode
-# ここからFlaskアプリを作るよ
+import sqlite3
+import datetime
+
 app = Flask(__name__)
 
-# Jinja2のフィルターとしてb64encodeを定義
 app.jinja_env.filters['b64encode'] = b64encode
-# データベースのURIを設定
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///edu_data.db'
-# SQLAlchemyオブジェクトを作成
 db = SQLAlchemy(app)
-# データベースのモデルを定義
+
+
 class StudyData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     study_hours = db.Column(db.Integer)
     score = db.Column(db.Integer)
-# データベースがなければ作成する
+
+
+class Subject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    hours = db.Column(db.Integer)
+
+
 with app.app_context():
     db.create_all()
-# ホームページを表示するためのルート
+
+    # データベースの初期化
+    subjects = [('英語', 0), ('数学', 0), ('国語', 0), ('理科', 0), ('社会', 0)]
+    for subject_name, hours in subjects:
+        subject = Subject(name=subject_name, hours=hours)
+        db.session.add(subject)
+    db.session.commit()
+
+
 @app.route('/')
 def index():
-    return render_template('index.html')
-# フォームから送信されたデータを処理し、結果ページを表示するためのルート
+    data = Subject.query.all()
+    return render_template('index.html', data=data)
+
+
 @app.route('/results', methods=['POST'])
 def results():
-    study_hours = int(request.form['study_hours'])# フォームから送信されたデータを取得
+    study_hours = int(request.form['study_hours'])
     score = int(request.form['score'])
 
-    # 取得したデータをデータベースに保存
     data = StudyData(study_hours=study_hours, score=score)
     db.session.add(data)
     db.session.commit()
-# データベース内の全てのデータを取得
+
     all_data = StudyData.query.all()
     hours = []
     scores = []
@@ -47,9 +62,8 @@ def results():
         hours.append(data.study_hours)
         scores.append(data.score)
 
-    # データの相関係数を計算し、結果を表示するための準備をする
     corr_coef = round(np.corrcoef(hours, scores)[0, 1], 2)
-#ビジュアライズ
+
     plt.scatter(hours, scores)
     plt.title(f"Correlation Coefficient: {corr_coef}")
     plt.xlabel("Study Hours")
@@ -62,26 +76,13 @@ def results():
     return render_template('results.html', plot_data=plot_data)
 
 
-
-
-
-
-#残り日数の変更
-import datetime
-
-
-
-
-# 残り日数を計算し、カウントダウンページを表示するためのルート
 @app.route('/exam', methods=['POST'])
 def exam():
-    # フォームから送信された試験日を取得し、計算に必要な形式に変換する
     exam_date = request.form['exam_date']
     exam_date = datetime.datetime.strptime(exam_date, '%Y-%m-%d')
     today = datetime.datetime.today()
     remaining_days = (exam_date - today).days
     return render_template('countdown.html', remaining_days=remaining_days)
-
 
 
 if __name__ == '__main__':
