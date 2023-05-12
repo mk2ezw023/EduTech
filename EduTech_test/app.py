@@ -2,11 +2,15 @@
 from flask import Flask, render_template, request
 import sqlite3
 import datetime
+import random
 import matplotlib.pyplot as plt
-import io
-import base64
+import spacy
+from scipy.stats import pearsonr
+nlp = spacy.load('en_core_web_sm')
+
 
 app = Flask(__name__)
+
 
 # データベースファイルのパス
 DATABASE = 'db/study.db'
@@ -26,6 +30,12 @@ def init_database():
 
 # 初期データの登録
 init_database()
+# 学習時間とテストの点数の相関を計算する関数
+def calculate_correlation(hours, scores):
+    # 相関を計算
+    correlation = np.corrcoef(hours, scores)[0, 1]
+    return correlation
+
 
 # ホームページのルートパス
 @app.route('/', methods=['GET', 'POST'])
@@ -34,25 +44,42 @@ def index():
         # フォームから送信されたデータを取得
         subjects = request.form.getlist('subject')
         hours = request.form.getlist('hours')
+        scores = request.form.getlist('score')
+
+        # 学習時間とテストの点数を整数に変換
+        hours = list(map(int, hours))
+        scores = list(map(int, scores))
+
+        # 学習時間とテストの点数の相関を計算
+        correlation, _ = pearsonr(hours, scores)
+
+        # 相関をグラフ化
+        plt.figure()
+        plt.scatter(hours, scores)
+        plt.xlabel('Study Hours')
+        plt.ylabel('Test Scores')
+        plt.title('Correlation between Study Hours and Test Scores')
+        plt.grid(True)
+        plt.savefig('static/correlation.png')
 
         with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
             # データベースのデータを更新
             for i in range(len(subjects)):
-                c.execute('UPDATE subjects SET hours = ? WHERE name = ?', (hours[i], subjects[i]))
+                c.execute('UPDATE subjects SET hours = ?, score = ? WHERE name = ?', (hours[i], scores[i], subjects[i]))
             conn.commit()
 
-        return render_template('result.html', subjects=subjects, hours=hours)
+        return render_template('results.html', subjects=subjects, hours=hours)
 
     else:
         # データベースから科目と時間のデータを取得
         with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
-            c.execute('SELECT name, hours, score FROM subjects')
+            c.execute('SELECT name, hours FROM subjects')
             data = c.fetchall()
 
         return render_template('index.html', data=data)
-
+    
 # 残り日数を計算し、カウントダウンページを表示するためのルート
 @app.route('/exam', methods=['POST'])
 def exam():
@@ -63,44 +90,50 @@ def exam():
     remaining_days = (exam_date - today).days
     return render_template('index.html', remaining_days=remaining_days)
 
-# グラフの表示を行うルート
-@app.route('/graph')
-def graph():
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
-        c.execute('SELECT name, hours, score FROM subjects')
-        data = c.fetchall()
-    
-    subjects = [subject[0] for subject in data]
-    hours = [subject[1] for subject in data]
-    scores = [subject[2] for subject in data]
 
-    # 円グラフの作成
-    plt.figure(figsize=(6, 6))
-    plt.pie(hours, labels=subjects, autopct='%1.1f%%')
-    plt.title('Study Hours by Subject')
+# ホームページを表示するためのルート
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-    # グラフをバイナリデータとして保存
-    graph_image = io.BytesIO()
-    plt.savefig(graph_image, format='png')
-    graph_image.seek(0)
-    graph_url = base64.b64encode(graph_image.getvalue()).decode()
+# しりとりゲームのルート
+@app.route('/word_chain', methods=['GET', 'POST'])
+def word_chain():
+    if request.method == 'POST':
+        user_word = request.form['user_word'].lower()
+        user_last_letter = user_word[-1]
+        computer_word = get_random_word(user_last_letter)
 
-    # 散布図の作成
-    plt.figure(figsize=(6, 6))
-    plt.scatter(scores, hours)
-    plt.xlabel('Scores')
-    plt.ylabel('Study Hours')
-    plt.title('Correlation between Scores and Study Hours')
+        if computer_word:
+            doc = nlp(computer_word)
+            pos = doc[0].pos_
+            return render_template('index.html', user_word=user_word, computer_word=computer_word, pos=pos)
+        else:
+            return render_template('index.html', user_word=user_word, computer_word=None, pos=None)
+    else:
+        return render_template('index.html', user_word=None, computer_word=None, pos=None)
 
-    # グラフをバイナリデータとして保存
-    scatter_image = io.BytesIO()
-    plt.savefig(scatter_image, format='png')
-    scatter_image.seek(0)
-    scatter_url = base64.b64encode(scatter_image.getvalue()).decode()
+def get_random_word(last_letter):
+    word_list = [
+        "apple", "banana", "cat", "dog", "elephant", "ant", "ball", "car", "dog", "elephant",
+        "fish", "guitar", "hat", "ice cream", "jacket", "kangaroo", "lion", "mouse", "noodle",
+        "orange", "penguin", "queen", "rabbit", "snake", "tiger", "umbrella", "violin", "watermelon",
+        "xylophone", "yoga", "zebra", "apple", "banana", "cat", "dog", "elephant", "ant", "ball",
+        "car", "dog", "elephant", "fish", "guitar", "hat", "ice cream", "jacket", "kangaroo", "lion",
+        "mouse", "noodle", "orange", "penguin", "queen", "rabbit", "snake", "tiger", "umbrella",
+        "violin", "watermelon", "xylophone", "yoga", "zebra", "apple", "banana", "cat", "dog",
+        "elephant", "ant", "ball", "car", "dog", "elephant", "fish", "guitar", "hat", "ice cream",
+        "jacket", "kangaroo", "lion", "mouse", "noodle", "orange", "penguin", "queen", "rabbit",
+        "snake", "tiger", "umbrella", "violin", "watermelon", "xylophone", "yoga", "zebra"
+    ]
+    filtered_words = [word for word in word_list if word.startswith(last_letter)]
+    if filtered_words:
+        return random.choice(filtered_words)
+    else:
+        return None
 
-    return render_template('graph.html', graph_url=graph_url, scatter_url=scatter_url)
 
 
 if __name__ == '__main__':
     app.run(port=5010)  # 代わりのポート番号を指定
+
