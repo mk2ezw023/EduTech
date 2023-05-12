@@ -11,6 +11,7 @@ from base64 import b64encode
 import datetime
 
 
+
 app = Flask(__name__)
 
 # SQLite3データベースのパス
@@ -76,17 +77,14 @@ def connect_db():
 
 
 def init_database():
-    conn = connect_db()
-    c = conn.cursor()
-    # テーブルが存在しない場合は作成
-    c.execute('CREATE TABLE IF NOT EXISTS subjects (id INTEGER PRIMARY KEY, name TEXT, hours INTEGER)')
-    # 既存のデータを削除
-    c.execute('DELETE FROM subjects')
-    # 初期データの挿入
-    subjects = [('英語', 0), ('数学', 0), ('国語', 0), ('理科', 0), ('社会', 0)]
-    c.executemany('INSERT INTO subjects (name, hours) VALUES (?, ?)', subjects)
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('DROP TABLE IF EXISTS subjects')
+        c.execute('CREATE TABLE subjects (id INTEGER PRIMARY KEY, name TEXT, hours INTEGER, grade INTEGER)')
+        subjects = [('英語', 0, 0), ('数学', 0, 0), ('国語', 0, 0), ('理科', 0, 0), ('社会', 0, 0)]
+        c.executemany('INSERT INTO subjects (name, hours, grade) VALUES (?, ?, ?)', subjects)
+        conn.commit()
+
 
 
 @app.route('/', methods=['GET', 'POST'])

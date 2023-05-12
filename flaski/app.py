@@ -2,6 +2,9 @@
 from flask import Flask, render_template, request
 import sqlite3
 import datetime
+import random
+import spacy
+nlp = spacy.load('en_core_web_sm')
 
 
 app = Flask(__name__)
@@ -61,6 +64,38 @@ def exam():
     today = datetime.datetime.today()
     remaining_days = (exam_date - today).days
     return render_template('index.html', remaining_days=remaining_days)
+
+
+# ホームページを表示するためのルート
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+# しりとりゲームのルート
+@app.route('/word_chain', methods=['GET', 'POST'])
+def word_chain():
+    if request.method == 'POST':
+        user_word = request.form['user_word'].lower()
+        user_last_letter = user_word[-1]
+        computer_word = get_random_word(user_last_letter)
+
+        if computer_word:
+            doc = nlp(computer_word)
+            pos = doc[0].pos_
+            return render_template('index.html', user_word=user_word, computer_word=computer_word, pos=pos)
+        else:
+            return render_template('index.html', user_word=user_word, computer_word=None, pos=None)
+    else:
+        return render_template('index.html', user_word=None, computer_word=None, pos=None)
+
+def get_random_word(last_letter):
+    word_list = ["apple", "banana", "cat", "dog", "elephant"]
+    filtered_words = [word for word in word_list if word.startswith(last_letter)]
+    if filtered_words:
+        return random.choice(filtered_words)
+    else:
+        return None
+
 
 
 if __name__ == '__main__':

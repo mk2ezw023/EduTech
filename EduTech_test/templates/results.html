@@ -1,13 +1,44 @@
+<!-- result.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Results</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <title>Study Tracker - Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Results</h1>
-    <div class="plot">
-        <img src="data:image/png;base64,{{ plot_data }}" alt="Scatter Plot">
-    </div>
+    <h1>Study Tracker - Result</h1>
+    <h2>Updated Study Data</h2>
+    <table>
+        <tr>
+            <th>Subject</th>
+            <th>Study Hours</th>
+            <th>Grade</th>
+        </tr>
+        {% for i in range(len(subjects)) %}
+        <tr>
+            <td>{{ subjects[i] }}</td>
+            <td>{{ hours[i] }}</td>
+            <td>{{ grades[i] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Study Hours vs Grade</h2>
+    <img src="data:image/png;base64,{{ graph }}" alt="Study Hours vs Grade">
 </body>
 </html>

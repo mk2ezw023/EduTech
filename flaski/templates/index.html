@@ -39,3 +39,26 @@
     <br>
     <button type="submit">試験までの残り日数を計算する</button>
   </form>
+
+<!-- word_chain.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Chain Game</title>
+</head>
+<body>
+    <h1>Word Chain Game</h1>
+    <h2>Your word: {{ user_word }}</h2>
+    {% if computer_word %}
+    <h2>Computer's word: {{ computer_word }}</h2>
+    <h3>Part of speech: {{ pos }}</h3>
+    {% else %}
+    <h2>No word found. You win!</h2>
+    {% endif %}
+    <form method="POST" action="{{ url_for('word_chain') }}">
+        <input type="text" name="user_word" placeholder="Enter a word">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
